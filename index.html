@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Saint Tropez | Ficha Técnica</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b3c5d">
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+}
+
+header {
+  background: linear-gradient(90deg, #0b3c5d, #c1121f);
+  color: white;
+  padding: 14px;
+  text-align: center;
+  font-size: 20px;
+}
+
+.container {
+  padding: 10px;
+}
+
+h3 {
+  margin: 12px 0 6px;
+  color: #0b3c5d;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+.card {
+  background: white;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  font-size: 16px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.add { background: #0b3c5d; color: white; }
+.save { background: #c1121f; color: white; }
+.new { background: #444; color: white; }
+.del { background: #999; color: white; }
+
+.total {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.pizza-item {
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>🍕 Saint Tropez – Ficha Técnica</header>
+
+<div class="container">
+
+<h3>Pizzas Salvas</h3>
+<div id="lista"></div>
+
+<button class="new" onclick="novaPizza()">➕ Nova Pizza</button>
+
+<hr>
+
+<input id="pizzaNome" placeholder="Nome da Pizza">
+
+<div id="ingredientes"></div>
+
+<button class="add" onclick="addIngrediente()">➕ Ingrediente</button>
+<button class="save" onclick="salvar()">💾 Salvar Pizza</button>
+<button class="del" onclick="excluir()">🗑 Excluir Pizza</button>
+
+<div class="total">
+Custo Total: R$ <span id="total">0.00</span>
+</div>
+
+</div>
+
+<script>
+let fichas = JSON.parse(localStorage.getItem("saint_tropez_mobile")) || [];
+let atual = null;
+
+function renderLista() {
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+  fichas.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "pizza-item";
+    div.innerText = p.nome;
+    div.onclick = () => carregar(p.id);
+    lista.appendChild(div);
+  });
+}
+
+function novaPizza() {
+  atual = { id: Date.now(), nome: "", ingredientes: [] };
+  document.getElementById("pizzaNome").value = "";
+  document.getElementById("ingredientes").innerHTML = "";
+  calcular();
+}
+
+function addIngrediente(d = {}) {
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerHTML = `
+<input placeholder="Ingrediente" value="${d.nome || ""}">
+<input type="number" placeholder="Qtd" value="${d.qtd || 0}" oninput="calcular()">
+<select onchange="calcular()">
+<option ${d.un=="g"?"selected":""}>g</option>
+<option ${d.un=="kg"?"selected":""}>kg</option>
+<option ${d.un=="ml"?"selected":""}>ml</option>
+<option ${d.un=="l"?"selected":""}>l</option>
+<option ${d.un=="un"?"selected":""}>un</option>
+</select>
+<input type="number" placeholder="Preço kg/l/un" value="${d.preco || 0}" oninput="calcular()">
+<div>Custo: R$ <span class="custo">0.00</span></div>
+`;
+  document.getElementById("ingredientes").appendChild(div);
+}
+
+function calcular() {
+  let total = 0;
+  document.querySelectorAll(".card").forEach(c => {
+    const qtd = +c.children[1].value || 0;
+    const un = c.children[2].value;
+    const preco = +c.children[3].value || 0;
+    const fator = (un === "g" || un === "ml") ? qtd / 1000 : qtd;
+    const custo = fator * preco;
+    c.querySelector(".custo").innerText = custo.toFixed(2);
+    total += custo;
+  });
+  document.getElementById("total").innerText = total.toFixed(2);
+}
+
+function salvar() {
+  if (!atual) novaPizza();
+  atual.nome = document.getElementById("pizzaNome").value;
+  atual.ingredientes = [];
+  document.querySelectorAll(".card").forEach(c => {
+    atual.ingredientes.push({
+      nome: c.children[0].value,
+      qtd: c.children[1].value,
+      un: c.children[2].value,
+      preco: c.children[3].value
+    });
+  });
+  fichas = fichas.filter(p => p.id !== atual.id);
+  fichas.push(atual);
+  localStorage.setItem("saint_tropez_mobile", JSON.stringify(fichas));
+  renderLista();
+  alert("Pizza salva!");
+}
+
+function carregar(id) {
+  atual = fichas.find(p => p.id === id);
+  document.getElementById("pizzaNome").value = atual.nome;
+  document.getElementById("ingredientes").innerHTML = "";
+  atual.ingredientes.forEach(i => addIngrediente(i));
+  calcular();
+}
+
+function excluir() {
+  if (!atual) return;
+  fichas = fichas.filter(p => p.id !== atual.id);
+  localStorage.setItem("saint_tropez_mobile", JSON.stringify(fichas));
+  novaPizza();
+  renderLista();
+}
+
+renderLista();
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+</body>
+</html>
