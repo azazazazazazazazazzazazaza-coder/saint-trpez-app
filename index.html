@@ -3,157 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Saint Tropez | Ficha Técnica</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b3c5d">
-
-<style>
-body{margin:0;font-family:Arial;background:#f4f6f8}
-header{background:linear-gradient(90deg,#0b3c5d,#c1121f);color:#fff;padding:14px;text-align:center;font-size:20px}
-.container{padding:10px}
-h3{margin:12px 0 6px;color:#0b3c5d}
-input,select{width:100%;padding:10px;margin-bottom:6px;font-size:16px}
-.card{background:#fff;padding:10px;border-radius:6px;margin-bottom:10px}
-button{width:100%;padding:12px;border:none;font-size:16px;border-radius:6px;margin-bottom:6px}
-.add{background:#0b3c5d;color:#fff}
-.save{background:#c1121f;color:#fff}
-.new{background:#444;color:#fff}
-.del{background:#999;color:#fff}
-.total{font-size:18px;font-weight:bold;margin-top:10px}
-.pizza-item{padding:10px;background:#fff;border-radius:6px;margin-bottom:6px;cursor:pointer}
-</style>
-</head>
-
-<body>
-
-<header>🍕 Saint Tropez – Ficha Técnica</header>
-
-<div class="container">
-<h3>Pizzas Salvas</h3>
-<div id="lista"></div>
-
-<button class="new" onclick="novaPizza()">➕ Nova Pizza</button>
-<hr>
-
-<input id="pizzaNome" placeholder="Nome da Pizza">
-<div id="ingredientes"></div>
-
-<button class="add" onclick="addIngrediente()">➕ Ingrediente</button>
-<button class="save" onclick="salvar()">💾 Salvar Pizza</button>
-<button class="del" onclick="excluir()">🗑 Excluir Pizza</button>
-
-<div class="total">Custo Total: R$ <span id="total">0.00</span></div>
-</div>
-
-<script>
-const KEY = "saint_tropez_mobile_v2";
-
-/* ===== CARREGAMENTO SEGURO ===== */
-function carregarStorage() {
-  let dados = JSON.parse(localStorage.getItem(KEY));
-  if (Array.isArray(dados)) return dados;
-
-  // MIGRA versões antigas
-  let antigo = JSON.parse(localStorage.getItem("saint_tropez_mobile")) || [];
-  antigo = antigo.map(p => { p.id = String(p.id); return p; });
-  localStorage.setItem(KEY, JSON.stringify(antigo));
-  return antigo;
-}
-
-let fichas = carregarStorage();
-let atual = null;
-
-/* ===== LISTA ===== */
-function renderLista() {
-  const lista = document.getElementById("lista");
-  lista.innerHTML = "";
-  fichas.forEach(p => {
-    const d = document.createElement("div");
-    d.className = "pizza-item";
-    d.textContent = p.nome || "(sem nome)";
-    d.onclick = () => abrirPizza(p.id);
-    lista.appendChild(d);
-  });
-}
-
-/* ===== NOVA ===== */
-function novaPizza() {
-  atual = { id: Date.now().toString(), nome:"", ingredientes:[] };
-  pizzaNome.value = "";
-  ingredientes.innerHTML = "";
-  calcular();
-}
-
-/* ===== ABRIR ===== */
-function abrirPizza(id) {
-  id = String(id);
-  const p = fichas.find(x => String(x.id) === id);
-  if (!p) return alert("Erro ao abrir a pizza");
-  atual = p;
-  pizzaNome.value = p.nome;
-  ingredientes.innerHTML = "";
-  p.ingredientes.forEach(i => addIngrediente(i));
-  calcular();
-}
-
-/* ===== INGREDIENTE ===== */
-function addIngrediente(d={}) {
-  const c = document.createElement("div");
-  c.className = "card";
-  c.innerHTML = `
-<input value="${d.nome||""}" placeholder="Ingrediente">
-<input type="number" value="${d.qtd||0}" oninput="calcular()">
-<select onchange="calcular()">
-<option ${d.un=="g"?"selected":""}>g</option>
-<option ${d.un=="kg"?"selected":""}>kg</option>
-<option ${d.un=="ml"?"selected":""}>ml</option>
-<option ${d.un=="l"?"selected":""}>l</option>
-<option ${d.un=="un"?"selected":""}>un</option>
-</select>
-<input type="number" value="${d.preco||0}" oninput="calcular()">
-<div>Custo: R$ <span class="custo">0.00</span></div>`;
-  ingredientes.appendChild(c);
-}
-
-/* ===== CÁLCULO ===== */
-function calcular() {
-  let total = 0;
-  document.querySelectorAll(".card").forEach(c => {
-    const qtd = +c.children[1].value || 0;
-    const un = c.children[2].value;
-    const preco = +c.children[3].value || 0;
-    const fator = (un=="g"||un=="ml") ? qtd/1000 : qtd;
-    const custo = fator * preco;
-    c.querySelector(".custo").innerText = custo.toFixed(2);
-    total += custo;
-  });
-  totalSpan.innerText = total.toFixed(2);
-}
-
-/* ===== SALVAR ===== */
-function salvar() {
-  if (!atual) novaPizza();
-  atual.nome = pizzaNome.value;
-  atual.ingredientes = [];
-  document.querySelectorAll(".card").forEach(c=>{
-    atual.ingredientes.push({
-      nome:c.children[0].value,
-      qtd:c.children[1].value,
-      un:c.children[2].value,
-      preco:c.children[3].value
-    });
-  });<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Saint Tropez | Ficha Técnica (Online)</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0b3c5d">
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -179,7 +33,7 @@ button{width:100%;padding:12px;border:none;font-size:16px;border-radius:6px;marg
 <header>🍕 Saint Tropez – Ficha Técnica (Compartilhada)</header>
 
 <div class="container">
-<h3>Pizzas (Online)</h3>
+<h3>Pizzas</h3>
 <div id="lista"></div>
 
 <button class="new" onclick="novaPizza()">➕ Nova Pizza</button>
@@ -196,7 +50,7 @@ button{width:100%;padding:12px;border:none;font-size:16px;border-radius:6px;marg
 </div>
 
 <script>
-/* ================= FIREBASE CONFIG ================= */
+/* ================= FIREBASE ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBHsZNZ-CSRvttb4kl8wUz5eGBLMOUwMaI",
   authDomain: "saint-tropez-app.firebaseapp.com",
@@ -210,10 +64,38 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const pizzasRef = db.collection("pizzas");
 
+/* ========== MIGRAÇÃO AUTOMÁTICA ========== */
+(async function migrar() {
+  const jaMigrou = localStorage.getItem("saint_migrado");
+  if (jaMigrou) return;
+
+  const chavesAntigas = [
+    "saint_tropez_mobile",
+    "saint_tropez_mobile_v2"
+  ];
+
+  let pizzasAntigas = [];
+  chavesAntigas.forEach(k => {
+    const dados = JSON.parse(localStorage.getItem(k)) || [];
+    pizzasAntigas = pizzasAntigas.concat(dados);
+  });
+
+  for (const p of pizzasAntigas) {
+    if (p && p.nome) {
+      await pizzasRef.add({
+        nome: p.nome,
+        ingredientes: p.ingredientes || []
+      });
+    }
+  }
+
+  localStorage.setItem("saint_migrado", "true");
+  console.log("Migração concluída");
+})();
+
 /* ================= APP ================= */
 let atual = null;
 
-/* LISTA EM TEMPO REAL */
 pizzasRef.onSnapshot(snapshot => {
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
@@ -227,7 +109,6 @@ pizzasRef.onSnapshot(snapshot => {
   });
 });
 
-/* NOVA PIZZA */
 function novaPizza(){
   atual = { nome:"", ingredientes:[] };
   pizzaNome.value="";
@@ -235,21 +116,19 @@ function novaPizza(){
   calcular();
 }
 
-/* ABRIR */
 function abrir(id, p){
   atual = { id, ...p };
   pizzaNome.value = p.nome;
   ingredientes.innerHTML="";
-  (p.ingredientes || []).forEach(i=>addIngrediente(i));
+  (p.ingredientes||[]).forEach(i=>addIngrediente(i));
   calcular();
 }
 
-/* INGREDIENTE */
 function addIngrediente(d={}){
   const c=document.createElement("div");
   c.className="card";
   c.innerHTML=`
-<input value="${d.nome||""}" placeholder="Ingrediente">
+<input value="${d.nome||""}">
 <input type="number" value="${d.qtd||0}" oninput="calcular()">
 <select onchange="calcular()">
 <option ${d.un=="g"?"selected":""}>g</option>
@@ -263,7 +142,6 @@ function addIngrediente(d={}){
   ingredientes.appendChild(c);
 }
 
-/* CÁLCULO */
 function calcular(){
   let t=0;
   document.querySelectorAll(".card").forEach(c=>{
@@ -278,7 +156,6 @@ function calcular(){
   total.innerText=t.toFixed(2);
 }
 
-/* SALVAR */
 async function salvar(){
   atual.nome=pizzaNome.value;
   atual.ingredientes=[];
@@ -296,40 +173,14 @@ async function salvar(){
   }else{
     await pizzasRef.add(atual);
   }
-  alert("Pizza salva (online)!");
+  alert("Pizza salva!");
 }
 
-/* EXCLUIR */
 async function excluir(){
   if(atual && atual.id){
     await pizzasRef.doc(atual.id).delete();
     novaPizza();
   }
-}
-</script>
-
-</body>
-</html>
-  fichas = fichas.filter(p=>p.id!==atual.id);
-  fichas.push(atual);
-  localStorage.setItem(KEY, JSON.stringify(fichas));
-  renderLista();
-  alert("Pizza salva!");
-}
-
-/* ===== EXCLUIR ===== */
-function excluir() {
-  if(!atual) return;
-  fichas = fichas.filter(p=>p.id!==atual.id);
-  localStorage.setItem(KEY, JSON.stringify(fichas));
-  novaPizza();
-  renderLista();
-}
-
-renderLista();
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
 }
 </script>
 
